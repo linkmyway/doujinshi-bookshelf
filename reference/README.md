@@ -10,3 +10,10 @@ readable TypeScript so the design can be studied and re-built elsewhere.
 They are intentionally framework-light: types and pure logic, with the
 platform seams (database, blob store, fetch) expressed as small
 interfaces you can adapt.
+
+## Type-check the skeleton
+
+```bash
+npm install
+npm run typecheck   # tsc --noEmit, strict
+```
