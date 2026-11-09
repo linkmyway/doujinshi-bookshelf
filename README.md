@@ -48,3 +48,10 @@ delisting, weekly five-part backup).
 
 React 19 + TypeScript, Tailwind CSS 4, TanStack React Query, Drizzle ORM,
 server actions on a hosted full-stack space platform.
+
+## Reference code
+
+The [`reference/`](reference/) folder contains a reference
+implementation of the core mechanisms, written from the documented
+method (the production app runs on a hosted platform whose source is
+not exportable).
