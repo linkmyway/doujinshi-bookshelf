@@ -8,6 +8,14 @@
 - 参考代码：[`reference/`](reference/)（数据模型、会话锁定的两级故障转移阅读器、两层候选裁决；`npm install && npm run typecheck` 可直接验）
 - 本仓只有方法与脱敏说明；真实藏书数据、封面与个人信息不在本仓（存放在私有存档仓）
 
+## 效果图 / Screenshots
+
+运行中界面的实拍（2026-11-09）；封面图已作薄码处理，只保留版式与氛围：
+
+![桌面端](docs/images/desktop.png)
+
+![移动端](docs/images/mobile.png)
+
 A personal web app for curating a doujinshi collection: author-sectioned
 shelves, verified source links, an in-app reader with a two-source failover
 chain, and a recommendation inbox where new finds wait for the owner's
