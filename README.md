@@ -1,20 +1,15 @@
+**English** | [简体中文](README.zh-CN.md)
+
 # Doujinshi Bookshelf — a curated personal collection shelf
 
-## 中文说明
+## Screenshots
 
-个人同人志收藏书架的实现方法开源版：作者分区书架、封面网格、内置阅读器与推荐收件箱是怎么做出来的。
+Live UI captures (2026-11-09); cover artwork is thin-mosaiced, keeping
+only the layout and the mood:
 
-- 实现文档：[`docs/IMPLEMENTATION.md`](docs/IMPLEMENTATION.md)（架构、数据模型、阅读器故障转移、两层推荐制、强制产品规则）
-- 参考代码：[`reference/`](reference/)（数据模型、会话锁定的两级故障转移阅读器、两层候选裁决；`npm install && npm run typecheck` 可直接验）
-- 本仓只有方法与脱敏说明；真实藏书数据、封面与个人信息不在本仓（存放在私有存档仓）
+![Desktop](docs/images/desktop.png)
 
-## 效果图 / Screenshots
-
-运行中界面的实拍（2026-11-09）；封面图已作薄码处理，只保留版式与氛围：
-
-![桌面端](docs/images/desktop.png)
-
-![移动端](docs/images/mobile.png)
+![Mobile](docs/images/mobile.png)
 
 A personal web app for curating a doujinshi collection: author-sectioned
 shelves, verified source links, an in-app reader with a two-source failover
