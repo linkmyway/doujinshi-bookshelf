@@ -83,10 +83,12 @@ Rules that matter more than the schema:
 
 ## Operations
 
-- Weekly automatic backup, five parts: catalogue JSON, a portability
-  kit (data + design language, so the shelf can be re-implemented on a
-  static blog stack), the bundled covers archive, the mirror mapping,
-  and the failover plan. Old backups are kept.
+- Daily GitHub sync instead of backups (the backup regime was retired
+  on 2026-11-10: the space itself is a closed platform and cannot be
+  backed up): current data and implementation materials are written
+  into the private archive + this public repo every night — catalogue
+  via the live actions, the covers bundle, the portability kit, the
+  mirror mapping and the failover plan all ride the same sync.
 - No unilateral delisting: the owner's designations stand; gates apply
   only at the shelving entrance, never retroactively.
 
@@ -121,3 +123,172 @@ Rules that matter more than the schema:
   archive and this public repo, updated together.
 - Under `prefers-reduced-motion` all of it turns off and the
   books degrade to flat static covers.
+
+## Features and implementation, in detail
+
+Feature by feature: what it does, how it is built, and where its edges
+are. Where this section and earlier summaries differ, this section
+governs.
+
+### Author-sectioned shelf
+
+- What: the whole collection is presented in author sections (the
+  shelf displays a Japanese name per author from a front-end mapping;
+  the database keeps the English/romaji name canonical), each section
+  holding that author's books.
+- How: one aggregate read returns everything (sections, books, links,
+  favourite/rating state). Ordering is a server-side rule: sections
+  A–Z by author; inside a section, series form volume blocks, and
+  blocks and standalones sort by **colophon release date**, newest
+  first (unknown dates sort last). There is no separate "add author"
+  action — a kept candidate creates its section automatically (see
+  the inbox below).
+- Edges: all catalogue change goes through server actions executed by
+  the curator; the app has no management UI.
+
+### Cover grid and card discipline
+
+- What: a cover grid (3 per row on mobile); a card shows only the
+  Japanese title, author, page count and a small tag set.
+- How: card tags are a **card-layer filter** — the book's full native
+  tag set lives in metadata, but cards render only the curator-defined
+  tag subset (two near-synonym tags are merged under one display tag).
+  Editions of the same work (original + translation) merge into one
+  book with per-language links.
+- Edges: screening gates (art style, adult presentation) are enforced
+  before shelving by verifying each work page's native tags — never
+  at the card layer, and never by keyword hit alone.
+
+### Cover images
+
+- What: one vertical cover per book; landscape composites are never
+  used raw as covers.
+- How: cover binaries are bundled into the client as local assets,
+  never hotlinked. Vertical sources use the true cover; landscape
+  sources are cropped to the vertical cover area via a stored focus
+  value (`coverFocusX`) — landscape promo images are usually a
+  "true cover + sample pages" composite and automatic saliency
+  cropping picks the wrong side, so the focus table is human-verified
+  per book. Books without cover art get a colour plaque from the
+  deterministic palette (see the 3D section).
+- Edges: the stored cover URL doubles as the local-cover match key;
+  because `updatebook` replaces the whole record, callers must pass
+  the cover fields explicitly (three books once lost their covers
+  this way; a migration restored them and a "book with no cover
+  source" alarm now guards the shelf).
+
+### Book detail
+
+- What: tapping a book swings it out in 3D, then opens a detail sheet:
+  a larger 3D book, title, circle, parody, pages, release date, card
+  tags, links, favourite and rating controls.
+- How: the detail book reuses the same `.book3d` system as the grid
+  (its own `.book-stage` perspective), larger, with a wider ground
+  shadow. Links follow the current one-source rule for display;
+  historical rows keep their site enum. Favourite and rating are
+  small dedicated mutations, reconciled by invalidating the shelf
+  query.
+- Edges: the detail never shows the full native tag set or the
+  (deliberately emptied) free-text notes.
+
+### In-space reader
+
+- What: full-screen reading — tap zones / swipe / keyboard paging, a
+  preloading window in both directions, double-tap zoom, thumbnail
+  placeholders first.
+- How: pages are never stored; server actions relay them —
+  `getreaderinfo` (page count + per-page paths), `getreaderpage`
+  (fetches through the primary source's current API version with the
+  correct Referer), `getreaderthumb`. The preload window slides with
+  reading direction. Single-page mode uses the owner's page-turn
+  ruling — left button = previous page, right = next page (not manga
+  direction), keyboard in sync — and the page frame's top edge sits
+  directly under the top bar.
+- Edges: reading position is **not** persisted (the owner explicitly
+  declined it). A source rate-limit (429) yields a "retry later"
+  prompt, never a retry storm.
+
+### Reader failover (primary → mirror)
+
+- What: when the primary source can't serve a book mid-session, the
+  same session continues on the mirror source.
+- How: each book carries a pre-mapped mirror gallery id (a
+  human-verified mapping, graded exact/probable). All page fetches go
+  through one fetch layer: primary first, mirror on failure. The
+  mirror side follows its worker plan: configurable CDN host, the
+  URL-derivation script cached ~50 minutes with a single refresh on
+  404, the reader Referer applied server-side, AVIF pages decoded
+  natively by the browser.
+- **Session lock (hard rule)**: within one book and one session the
+  source may only escalate downward, never back up; a new session
+  starts from the primary again. Unmapped books fall back to a
+  "retry later" prompt — no third source is improvised.
+- Edges: the mapping is maintained by hand, book by book (machine
+  guesses are candidates only); a book that exists only inside a
+  compilation gallery is recorded as manual-only and the reader never
+  auto-matches it.
+
+### Random draw
+
+- What: a home-screen button draws one book at random — a highlight
+  sweeps over covers, lands on the winner and swings it out in 3D.
+- How: a pure front-end state machine: a flash state lights random
+  covers in sequence (only an outline overlay's opacity animates,
+  plus the book's flash transform), and the final state runs the
+  draw-pulse keyframes (out to −28deg, settling at the −21deg pulled
+  pose). The draw never auto-opens the detail; the owner taps.
+- Edges: transform/opacity only; disabled under reduced motion.
+
+### Recommendation inbox
+
+- What: a candidate strip at the front of the homepage: the curator's
+  new finds queue there; the owner reads and taps keep/delete; only
+  keeps join the shelf.
+- How: `addcandidate` stores the candidate — **its cover is fetched
+  server-side at intake and stored as an owned blob**, so cards never
+  hotlink source images. Entries carry a tier badge (A fully vetted /
+  B passes all hard rules with one stated doubt), a one-line
+  rationale, mandatory B-tier doubt text, warning tags and the
+  discovery channel; store-only finds are marked. `judgecandidate`:
+  keep shelves the work into its author section (creating the section
+  for a new author) and records the shelved book id so re-judging
+  never double-shelves; delete keeps the entry as a negative sample.
+  Judging also works from the reader's bottom bar. Candidates never
+  expire; an empty queue renders nothing.
+- Edges: verdicts are training samples — keeps and deletes feed the
+  daily screening's filter weights. Works presenting minors never
+  enter even the strip; that gate sits before `addcandidate`.
+
+### Author directory and navigation
+
+- What: a bottom-sheet author directory (tap a name to jump to its
+  section) and a back-to-top button.
+- How: directory rows close the sheet and scroll to the section
+  anchor. Back-to-top exists on the home view only — never over the
+  detail sheet or the reader. The list view stays flat (3D is a
+  grid-view treatment only).
+- Edges: navigation positioning uses anchors + geometry, not
+  per-frame callbacks (WebView throttling freezes those).
+
+### Favourites and ratings
+
+- What: a heart toggle (frosted-glass orb on the cover's corner) and
+  a star rating in the detail.
+- How: two narrow mutations touching only their field; state renders
+  on the card (orb filled vs. greyed) and as a pill badge for the
+  rating. There is no separate favourites page — favourite is a state
+  on the book, not an information-architecture level.
+- Edges: ratings clear by tapping the same star again (null).
+
+### The action surface (UI-less catalogue management)
+
+- What: every catalogue change there is.
+- How: the server actions are the whole surface — shelf read, add /
+  full-replace update / delete, favourite, rating, release date,
+  cover focus, the candidate trio and the reader trio. The front-end
+  has no add/edit/delete controls at all (the inbox's keep/delete is
+  a verdict, not management).
+- Edges: actions are invoked only through the published action
+  channel by the curator. Bypassing them (direct database or file
+  edits) is forbidden — link verification, cover storage and dedupe
+  all live inside the actions.
