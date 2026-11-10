@@ -56,6 +56,12 @@ export interface CandidateRecord extends CandidateInput {
   shelvedBookId: number | null;
 }
 
+/** @example
+ * await addCandidate(store, { tier: "B", hitTags: ["femdom"], doubt: "…", … }, coverUrl)
+ * // → { id: 3, deduped: false }
+ * await addCandidate(store, sameWorkAgain, coverUrl)
+ * // → { id: 3, deduped: true } — the strip never holds a work twice.
+ */
 export async function addCandidate(
   store: CandidateStore,
   input: CandidateInput,

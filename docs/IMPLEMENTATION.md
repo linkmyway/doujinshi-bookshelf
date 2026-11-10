@@ -89,3 +89,35 @@ Rules that matter more than the schema:
   and the failover plan. Old backups are kept.
 - No unilateral delisting: the owner's designations stand; gates apply
   only at the shelving entrance, never retroactively.
+
+## CSS 3D book effect
+
+- Pure CSS 3D — no WebGL, no image assets. `.book3d` is a
+  preserve-3d solid of four faces: the front cover at
+  `translateZ(d)`, the spine on the left (`rotateY(-90deg)`), the
+  page block on the right (`rotateY(90deg)`) and along the bottom
+  (`rotateX(-90deg)`). `--book-d` is the half-thickness, driven by
+  page count: total depth `clamp(16, 12 + pages/8, 34)` px, or 19px
+  when the page count is unknown.
+- Stage chain: the grid shares one `perspective: 1500px` (a whole
+  row reads as one viewpoint); each `.book-stage` carries its own
+  1100px perspective. Ancestry contract: no filter,
+  backdrop-filter, transform or overflow clipping may sit between
+  the stage and the book — any of them flattens preserve-3d and
+  the book silently collapses into a flat card.
+- Spine colour is a deterministic palette: a string hash of
+  `id:title` modulo 8 deep cloth tones, never stored, stable
+  across renders. Page edges are a `repeating-linear-gradient`
+  (2px paper / 1px seam), not an image.
+- Every state is a single transform on the book itself: resting
+  `rotateY(13deg)` (spine showing), tap adds `.book3d-pulled`
+  (-21deg swing-out, ~170ms before the detail opens), the random
+  draw uses flash / final states. The tap target never transforms,
+  so the preserve-3d chain survives mid-gesture. The ground
+  contact shadow sits outside the 3D element, flat on the stage.
+- Reference code: `reference/book-3d.css` (the production
+  stylesheet, extracted) and `reference/book-3d.ts` (thickness,
+  palette, state transforms) — byte-identical in the private
+  archive and this public repo, updated together.
+- Under `prefers-reduced-motion` all of it turns off and the
+  books degrade to flat static covers.
