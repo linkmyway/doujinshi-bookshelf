@@ -292,3 +292,9 @@ governs.
   channel by the curator. Bypassing them (direct database or file
   edits) is forbidden — link verification, cover storage and dedupe
   all live inside the actions.
+
+## Sync note (2026-11-12, covering the 2026-11-11 Space changes)
+
+- **Three-layer tag system**: each book's native tags are kept as-is at the bottom layer. Above them sits a server-side tag registry of 12 entries across four tiers (core / trial / watch / neutral), each with aliases and a grouping direction. Candidate matching, directory grouping and filtering are all driven by the registry, so promoting or demoting an axis is a one-place registry change. The shelf export now returns the registry as a top-level `tagRegistry` field. Stored tags were migrated once to the registry vocabulary (add-only; the neutral entry is never written into stored tags).
+- **Navigation, final form**: a single row — a purely typographic title plus the total count on the left; favourites / authors / tags buttons right-aligned. A selected long tag truncates with an ellipsis inside a hard width cap (the full name stays in the aria-label and the tag directory). The former second row was removed entirely; the random-pick action is now a round gradient floating button at the lower right.
+- **New sections**: keeping a recommendation candidate creates the author's section on demand (find-or-create); display-name mappings for such sections are filled in afterwards.
