@@ -41,12 +41,15 @@ archive); sample structures below are illustrative only.
 
 ## Design
 
-- Light lavender palette (fixed; the shelf is never dark), CSS 3D book
+- Dusk Porcelain palette (blue-violet over warm neutrals; never dark), CSS 3D book
   covers in a grid, mobile-first (3 covers per row), author directory as a
   bottom sheet.
-- Hard mobile lessons baked in: no View Transitions (they froze the
-  owner's WebView), and sandbox probes never substitute for the owner's
-  real-device verdict.
+- Hard mobile lessons baked in: View Transitions froze the owner's
+  WebView and were banned until a real-device probe cleared them on
+  2026-11-12 (graduated rollout since); the shelf's detail morph
+  ultimately uses a FLIP clone flight instead, because WebKit's
+  full-page snapshot swap shifted every other book. Sandbox probes
+  never substitute for the owner's real-device verdict.
 
 ## Implementation
 

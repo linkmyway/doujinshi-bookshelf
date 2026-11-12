@@ -193,17 +193,24 @@ governs.
 
 ### In-space reader
 
-- What: full-screen reading — tap zones / swipe / keyboard paging, a
-  preloading window in both directions, double-tap zoom, thumbnail
-  placeholders first.
+- What: full-screen reading in two modes — continuous vertical
+  scroll by default, single-page mode one tap away in the top bar
+  (no reload). Modelled on the wnacg reader; rebuilt 2026-11-10 to
+  the owner's nine-point spec.
 - How: pages are never stored; server actions relay them —
-  `getreaderinfo` (page count + per-page paths), `getreaderpage`
+  `getreaderinfo` (page count + per-page dimensions), `getreaderpage`
   (fetches through the primary source's current API version with the
-  correct Referer), `getreaderthumb`. The preload window slides with
-  reading direction. Single-page mode uses the owner's page-turn
-  ruling — left button = previous page, right = next page (not manga
-  direction), keyboard in sync — and the page frame's top edge sits
-  directly under the top bar.
+  correct Referer), `getreaderthumb`. Scroll mode reserves each
+  page's aspect-ratio box upfront, preloads images in queued order
+  and marks the end of the book; width is adaptive only. Auto-scroll
+  is a single toggle at a fixed 10px/sec (scroll mode only, no speed
+  control) and stops the moment the progress slider is dragged or a
+  jump lands. Both modes share the bottom-right "N / total" button
+  opening a progress slider. Single-page mode uses the owner's
+  page-turn ruling — left button = previous page, right = next page
+  (not manga direction), keyboard in sync — tapping the image
+  toggles all controls, and the page frame's top edge sits directly
+  under the top bar. No dark theme.
 - Edges: reading position is **not** persisted (the owner explicitly
   declined it). A source rate-limit (429) yields a "retry later"
   prompt, never a retry storm.
